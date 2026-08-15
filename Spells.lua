@@ -49,6 +49,7 @@ local function Invalidate()
 	end
 end
 
+-- SPELLS_CHANGED covers learning and unlearning alike here. (LEARNED_SPELL_IN_TAB
+-- does not exist on this client — registering it throws.)
 FM.RegisterEvent("PLAYER_LOGIN", Invalidate)
 FM.RegisterEvent("SPELLS_CHANGED", Invalidate)
-FM.RegisterEvent("LEARNED_SPELL_IN_TAB", Invalidate)

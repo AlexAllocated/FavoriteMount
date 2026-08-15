@@ -15,6 +15,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) /
   language works; the name list stays as a fallback.
 - `/fm` prints the map id, and every message it prints is translatable.
 
+### Fixed
+- No more error at login: `LEARNED_SPELL_IN_TAB` does not exist on this client.
+  An event the client rejects is skipped now instead of breaking the file.
+
 ## [1.0.0] - 2026-08-15
 
 ### Added

@@ -25,8 +25,13 @@ local handlers = {}
 
 function FM.RegisterEvent(event, handler)
 	if not handlers[event] then
+		-- an event this client does not know throws on registration, and would
+		-- take the rest of that file's main chunk down with it. Skipping the
+		-- one event costs a refresh; losing the file costs the addon.
+		if not pcall(eventFrame.RegisterEvent, eventFrame, event) then
+			return
+		end
 		handlers[event] = {}
-		eventFrame:RegisterEvent(event)
 	end
 	table.insert(handlers[event], handler)
 end
