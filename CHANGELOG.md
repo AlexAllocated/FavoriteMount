@@ -3,6 +3,17 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) /
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-15
+
+### Changed
+- Druids: form or mount is decided by speed now (a tie goes to the form, since
+  shifting is instant) — flight form over a drake, a ground mount over travel form.
+- `/fm forms` now means "always shift", instead of "forms before mounts".
+
+### Fixed
+- Swimming is detected again: entering the water fires no event, so it is sampled.
+- `/fm` shows how form and mount are being weighed.
+
 ## [0.1.1] - 2026-08-15
 
 ### Added

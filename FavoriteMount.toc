@@ -2,7 +2,7 @@
 ## Title: Favorite Mount
 ## Notes: One button: picks a random mount that fits the zone, plus druid forms
 ## Author: Klopfer-Hello
-## Version: 0.1.1
+## Version: 0.2.0
 ## IconTexture: Interface\Icons\Ability_Mount_RidingHorse
 ## DefaultState: enabled
 ## SavedVariablesPerCharacter: FavoriteMountDB

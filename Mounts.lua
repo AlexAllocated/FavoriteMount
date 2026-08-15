@@ -13,9 +13,24 @@ local MOUNT_SUBCLASS_ID = 5 -- Mount
 local FLYING_SKILL = 225 -- expert riding: the first flying tier
 local NUM_BAGS = 4 -- backpack (0) plus four bag slots
 
+-- the required skill also says how fast the thing is: apprentice 75 and
+-- journeyman 150 walk at +60% and +100%, expert 225 and artisan 300 fly at
+-- +60% and +280%. Knowing this lets a druid form be weighed against a mount
+-- instead of one always beating the other by rule.
+local function SpeedForSkill(skill)
+	if skill >= 300 then
+		return 280
+	elseif skill >= 225 then
+		return 60
+	elseif skill >= 150 then
+		return 100
+	end
+	return 60
+end
+
 FM.Mounts = {}
 
-local cache = { fly = {}, ground = {}, unknown = {} }
+local cache = { fly = {}, ground = {}, unknown = {}, speed = {} }
 local dirty = true
 
 -- container API: the modern namespace on this client, legacy globals as a
@@ -58,17 +73,22 @@ local function RequiredSkill(itemID)
 	return best
 end
 
--- "fly" | "ground" | nil (item data not cached yet, ask again later)
+-- "fly" | "ground" | nil (item data not cached yet, ask again later), plus the
+-- required skill the answer was read from
 local function Classify(itemID)
+	local skill = RequiredSkill(itemID)
 	local override = FM.db and FM.db.mountType[itemID]
 	if override then
-		return override
+		-- a hand-corrected item still carries its own skill line; only when the
+		-- tooltip has not loaded yet does the kind alone have to do, and then
+		-- the faster tier is assumed so no druid form wins by accident
+		local assumed = (override == "fly") and 300 or 150
+		return override, (skill > 0) and skill or assumed
 	end
-	local skill = RequiredSkill(itemID)
 	if skill == 0 then
 		return nil -- tooltip not populated yet
 	end
-	return (skill >= FLYING_SKILL) and "fly" or "ground"
+	return (skill >= FLYING_SKILL) and "fly" or "ground", skill
 end
 
 -- is this bag item a mount? Returns false while the item is uncached, and the
@@ -105,6 +125,7 @@ local function Scan()
 	wipe(cache.fly)
 	wipe(cache.ground)
 	wipe(cache.unknown)
+	wipe(cache.speed)
 	local retry = false
 	for bag = 0, NUM_BAGS do
 		for slot = 1, NumSlots(bag) do
@@ -114,7 +135,10 @@ local function Scan()
 				if uncached then
 					retry = true
 				elseif isMount and not (FM.db and FM.db.excluded[itemID]) then
-					local kind = Classify(itemID)
+					local kind, skill = Classify(itemID)
+					if kind then
+						cache.speed[itemID] = SpeedForSkill(skill)
+					end
 					if kind == "fly" then
 						cache.fly[#cache.fly + 1] = itemID
 					elseif kind == "ground" then
@@ -152,6 +176,13 @@ end
 function FM.Mounts.Unknown()
 	Ensure()
 	return cache.unknown
+end
+
+-- the movement bonus this mount grants, in percent (0 when it is not one of
+-- ours). Comparable with a druid form's speed, within the same kind.
+function FM.Mounts.Speed(itemID)
+	Ensure()
+	return cache.speed[itemID] or 0
 end
 
 -- a random mount of the requested kind, nil when there is none

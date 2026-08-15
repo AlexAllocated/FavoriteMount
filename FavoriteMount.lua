@@ -9,12 +9,12 @@ local ADDON_NAME = ...
 FavoriteMount = FavoriteMount or {}
 local FM = FavoriteMount
 
-FM.VERSION = "0.1.1"
+FM.VERSION = "0.2.0"
 
 local DB_DEFAULTS = {
 	mountType = {}, -- [itemID] = "fly" | "ground": manual classification overrides
 	excluded = {},  -- [itemID] = true: never summon this one
-	preferForms = false, -- druids: forms before mounts even when a mount fits
+	alwaysForms = false, -- druids: shift even where a mount would be faster
 	macroCreated = false,
 }
 
@@ -54,6 +54,9 @@ FM.RegisterEvent("ADDON_LOADED", function(name)
 		return
 	end
 	FavoriteMountDB = FavoriteMountDB or {}
+	-- 0.2.0 decides form vs mount by speed instead of by a flag, so the old
+	-- "prefer forms" switch has no meaning any more
+	FavoriteMountDB.preferForms = nil
 	for key, value in pairs(DB_DEFAULTS) do
 		if FavoriteMountDB[key] == nil then
 			FavoriteMountDB[key] = value

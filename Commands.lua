@@ -51,6 +51,8 @@ commands["status"] = function()
 	if #forms > 0 then
 		table.sort(forms)
 		FM.PrintLine(L["druid forms"] .. ": " .. table.concat(forms, ", "))
+		local mode = FM.db.alwaysForms and L["always"] or L["whichever is faster"]
+		FM.PrintLine(string.format(L["form or mount: %s"], mode))
 	end
 end
 
@@ -94,9 +96,10 @@ commands["exclude"] = function()
 end
 
 commands["forms"] = function()
-	FM.db.preferForms = not FM.db.preferForms
+	FM.db.alwaysForms = not FM.db.alwaysForms
 	FM.Macro.Update()
-	FM.Print(string.format(L["druid forms first: %s"], FM.db.preferForms and L["on"] or L["off"]))
+	local mode = FM.db.alwaysForms and L["always"] or L["whichever is faster"]
+	FM.Print(string.format(L["form or mount: %s"], mode))
 end
 
 commands["macro"] = function()
@@ -108,7 +111,7 @@ commands["help"] = function()
 	FM.PrintLine("/fm macro — create or repair the macro")
 	FM.PrintLine("/fm fly | /fm ground — classify the hovered mount by hand")
 	FM.PrintLine("/fm exclude — never (or again) use the hovered mount")
-	FM.PrintLine("/fm forms — druids: forms before mounts")
+	FM.PrintLine("/fm forms — druids: always shift, or take whatever is faster")
 end
 
 SLASH_FAVORITEMOUNT1 = "/favoritemount"

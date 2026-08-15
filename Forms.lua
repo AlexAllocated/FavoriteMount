@@ -14,6 +14,17 @@ local FORM_SPELLS = {
 	swiftFlight = 40120,
 }
 
+-- movement bonus in percent, on the same scale the mounts are measured on, so
+-- the two can be compared: travel form is slower than any ground mount, plain
+-- flight form matches a normal flyer, swift flight form matches an epic one.
+-- Aquatic form has no rival — nothing else moves in water at all.
+local FORM_SPEED = {
+	travel = 40,
+	aquatic = 0,
+	flight = 60,
+	swiftFlight = 280,
+}
+
 FM.Forms = {}
 
 local known = {} -- [key] = localized spell name
@@ -52,19 +63,25 @@ function FM.Forms.Refresh()
 	end
 end
 
--- the form to use for a situation, or nil when the druid cannot (or should
--- not) shift: "swim" | "fly" | "ground"
+-- the form to use for a situation ("swim" | "fly" | "ground"), plus its speed
+-- so the caller can weigh it against a mount. nil when the druid does not know
+-- a form that fits.
 function FM.Forms.For(situation)
 	if not IsDruid() then
-		return nil
+		return nil, 0
 	end
+	local key
 	if situation == "swim" then
-		return known.aquatic
+		key = known.aquatic and "aquatic"
+	elseif situation == "fly" then
+		key = (known.swiftFlight and "swiftFlight") or (known.flight and "flight")
+	else
+		key = known.travel and "travel"
 	end
-	if situation == "fly" then
-		return known.swiftFlight or known.flight
+	if not key then
+		return nil, 0
 	end
-	return known.travel
+	return known[key], FORM_SPEED[key]
 end
 
 function FM.Forms.Known()

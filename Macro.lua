@@ -32,7 +32,7 @@ local function Build()
 	local swimming = IsSwimming and IsSwimming()
 	local canFly = FM.Zones.CanFly()
 	local situation = swimming and "swim" or (canFly and "fly" or "ground")
-	local form = FM.Forms.For(situation)
+	local form, formSpeed = FM.Forms.For(situation)
 
 	if situation == "swim" then
 		-- no mount works while swimming; only a druid has an answer here
@@ -44,8 +44,16 @@ local function Build()
 
 	local kind = (situation == "fly") and "fly" or "ground"
 	local itemID = FM.Mounts.Random(kind)
-	-- a druid shifts instead of summoning when asked to, or when nothing fits
-	if form and (FM.db.preferForms or not itemID) then
+	-- form or mount? Whichever actually moves faster, and a tie goes to the
+	-- form because shifting is instant and costs nothing. So swift flight form
+	-- beats an epic drake, while travel form's 40% loses to any ground mount —
+	-- and with no fitting mount in the bags the form goes regardless.
+	-- '/fm forms' overrides all of that in favour of shifting.
+	local mountSpeed = 0
+	if itemID then
+		mountSpeed = FM.Mounts.Speed(itemID)
+	end
+	if form and (not itemID or FM.db.alwaysForms or formSpeed >= mountSpeed) then
 		return "#showtooltip\n/cast " .. form, form
 	end
 	if itemID then
@@ -117,11 +125,27 @@ function FM.Macro.Update(verbose)
 	end
 end
 
+-- entering or leaving the water fires no event at all, and it decides the
+-- whole answer: no mount works while swimming, only a druid's aquatic form
+-- does. So the state is sampled and only a change reaches Update — everything
+-- else here is event driven.
+local wasSwimming
+
+local function WatchSwimming()
+	local swimming = (IsSwimming and IsSwimming()) or false
+	if swimming ~= wasSwimming then
+		wasSwimming = swimming
+		FM.Macro.Update()
+	end
+end
+
 FM.RegisterEvent("PLAYER_LOGIN", function()
 	-- the macro list is not reliably ready at login; a moment later it is
 	C_Timer.After(3, function()
 		FM.Macro.Update(not FM.db.macroCreated)
 	end)
+	wasSwimming = (IsSwimming and IsSwimming()) or false
+	C_Timer.NewTicker(0.5, WatchSwimming)
 end)
 
 for _, event in ipairs({
