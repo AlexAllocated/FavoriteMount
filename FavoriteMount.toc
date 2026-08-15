@@ -1,0 +1,16 @@
+## Interface: 20506
+## Title: Favorite Mount
+## Notes: One button: picks a random mount that fits the zone, plus druid forms
+## Author: Klopfer-Hello
+## Version: 0.1.0
+## IconTexture: Interface\Icons\Ability_Mount_RidingHorse
+## DefaultState: enabled
+## SavedVariablesPerCharacter: FavoriteMountDB
+
+FavoriteMount.lua
+Locale.lua
+Zones.lua
+Mounts.lua
+Forms.lua
+Macro.lua
+Commands.lua

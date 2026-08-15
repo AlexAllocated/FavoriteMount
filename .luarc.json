@@ -1,0 +1,31 @@
+{
+	"runtime.version": "Lua 5.1",
+	"diagnostics.globals": [
+		"FavoriteMount",
+		"FavoriteMountDB",
+		"GetItemInfo",
+		"GetSpellInfo",
+		"GetNumSpellTabs",
+		"GetSpellTabInfo",
+		"GetSpellBookItemName",
+		"BOOKTYPE_SPELL",
+		"UnitBuff",
+		"GetContainerNumSlots",
+		"GetContainerItemID",
+		"GetMacroIndexByName",
+		"GetNumMacros",
+		"MAX_ACCOUNT_MACROS",
+		"CreateMacro",
+		"EditMacro",
+		"IsIndoors",
+		"IsSwimming",
+		"IsMounted"
+	],
+	"diagnostics.disable": [
+		"lowercase-global",
+		"missing-parameter",
+		"param-type-mismatch",
+		"cast-local-type",
+		"deprecated"
+	]
+}

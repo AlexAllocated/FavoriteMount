@@ -1,0 +1,14 @@
+package-as: FavoriteMount
+
+enable-nolib-creation: no
+
+ignore:
+  - .git
+  - .gitignore
+  - .luarc.json
+  - .pkgmeta
+  - CLAUDE.md
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
