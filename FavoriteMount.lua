@@ -9,7 +9,7 @@ local ADDON_NAME = ...
 FavoriteMount = FavoriteMount or {}
 local FM = FavoriteMount
 
-FM.VERSION = "0.2.0"
+FM.VERSION = "1.0.0"
 
 local DB_DEFAULTS = {
 	mountType = {}, -- [itemID] = "fly" | "ground": manual classification overrides

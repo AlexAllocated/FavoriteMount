@@ -3,7 +3,7 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) /
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2026-08-15
+## [1.0.0] - 2026-08-15
 
 ### Added
 - Druids indoors: cat form, where no mount comes out and travel form is refused.
