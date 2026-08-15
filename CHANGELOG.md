@@ -5,13 +5,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) /
 
 ## [0.2.0] - 2026-08-15
 
+### Added
+- Druids indoors: cat form, where no mount comes out and travel form is refused.
+
 ### Changed
 - Druids: form or mount is decided by speed now (a tie goes to the form, since
   shifting is instant) — flight form over a drake, a ground mount over travel form.
 - `/fm forms` now means "always shift", instead of "forms before mounts".
 
 ### Fixed
-- Swimming is detected again: entering the water fires no event, so it is sampled.
+- Swimming and roofs are detected again: neither fires a reliable event, so both
+  are sampled.
 - `/fm` shows how form and mount are being weighed.
 
 ## [0.1.1] - 2026-08-15

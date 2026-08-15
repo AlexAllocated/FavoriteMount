@@ -29,17 +29,29 @@ local function Build()
 		return "#showtooltip\n/cancelform", "cancel form"
 	end
 
-	local swimming = IsSwimming and IsSwimming()
-	local canFly = FM.Zones.CanFly()
-	local situation = swimming and "swim" or (canFly and "fly" or "ground")
+	local situation = "ground"
+	if IsSwimming and IsSwimming() then
+		situation = "swim"
+	elseif FM.Zones.Indoors() then
+		situation = "indoors"
+	elseif FM.Zones.CanFly() then
+		situation = "fly"
+	end
 	local form, formSpeed = FM.Forms.For(situation)
 
-	if situation == "swim" then
-		-- no mount works while swimming; only a druid has an answer here
+	-- water and roofs both rule out every mount there is, so only a druid has
+	-- an answer: aquatic form to swim, cat form to at least beat a walk
+	if situation == "swim" or situation == "indoors" then
 		if form then
 			return "#showtooltip\n/cast " .. form, form
 		end
-		return nil, "swimming"
+		if situation == "swim" then
+			return nil, "swimming"
+		end
+		-- no cat form to shift into: try the ground answer anyway, since not
+		-- every roof the client reports actually refuses a mount
+		situation = "ground"
+		form, formSpeed = FM.Forms.For(situation)
 	end
 
 	local kind = (situation == "fly") and "fly" or "ground"
@@ -125,16 +137,17 @@ function FM.Macro.Update(verbose)
 	end
 end
 
--- entering or leaving the water fires no event at all, and it decides the
--- whole answer: no mount works while swimming, only a druid's aquatic form
--- does. So the state is sampled and only a change reaches Update — everything
--- else here is event driven.
-local wasSwimming
+-- water and roofs decide the whole answer — no mount works in either — but
+-- entering the water fires no event at all, and the indoor event does not
+-- catch every overhang. So both are sampled, and only a change reaches Update;
+-- everything else here stays event driven.
+local wasSwimming, wasIndoors
 
-local function WatchSwimming()
+local function WatchSurroundings()
 	local swimming = (IsSwimming and IsSwimming()) or false
-	if swimming ~= wasSwimming then
-		wasSwimming = swimming
+	local indoors = FM.Zones.Indoors()
+	if swimming ~= wasSwimming or indoors ~= wasIndoors then
+		wasSwimming, wasIndoors = swimming, indoors
 		FM.Macro.Update()
 	end
 end
@@ -145,7 +158,8 @@ FM.RegisterEvent("PLAYER_LOGIN", function()
 		FM.Macro.Update(not FM.db.macroCreated)
 	end)
 	wasSwimming = (IsSwimming and IsSwimming()) or false
-	C_Timer.NewTicker(0.5, WatchSwimming)
+	wasIndoors = FM.Zones.Indoors()
+	C_Timer.NewTicker(0.5, WatchSurroundings)
 end)
 
 for _, event in ipairs({

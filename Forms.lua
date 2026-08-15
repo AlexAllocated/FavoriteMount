@@ -12,6 +12,7 @@ local FORM_SPELLS = {
 	aquatic = 1066,
 	flight = 33943,
 	swiftFlight = 40120,
+	cat = 768,
 }
 
 -- movement bonus in percent, on the same scale the mounts are measured on, so
@@ -23,6 +24,7 @@ local FORM_SPEED = {
 	aquatic = 0,
 	flight = 60,
 	swiftFlight = 280,
+	cat = 30, -- feral swiftness when talented; dash on top, whenever you press it
 }
 
 FM.Forms = {}
@@ -63,9 +65,9 @@ function FM.Forms.Refresh()
 	end
 end
 
--- the form to use for a situation ("swim" | "fly" | "ground"), plus its speed
--- so the caller can weigh it against a mount. nil when the druid does not know
--- a form that fits.
+-- the form to use for a situation ("swim" | "indoors" | "fly" | "ground"),
+-- plus its speed so the caller can weigh it against a mount. nil when the
+-- druid does not know a form that fits.
 function FM.Forms.For(situation)
 	if not IsDruid() then
 		return nil, 0
@@ -73,6 +75,10 @@ function FM.Forms.For(situation)
 	local key
 	if situation == "swim" then
 		key = known.aquatic and "aquatic"
+	elseif situation == "indoors" then
+		-- under a roof nothing else moves: mounts are refused and travel form
+		-- needs open sky, while cat form shifts anywhere and can dash
+		key = known.cat and "cat"
 	elseif situation == "fly" then
 		key = (known.swiftFlight and "swiftFlight") or (known.flight and "flight")
 	else
@@ -91,13 +97,22 @@ end
 -- am I standing in one of the travel forms? Forms show up as a buff on the
 -- player, and the names were resolved from the client — no stance-index
 -- guessing, whose meaning differs between game versions.
+--
+-- Cat form is deliberately left out: it is a combat form as much as a way to
+-- get around, so it must not turn the button into a plain '/cancelform'.
+-- Pressing it again while in cat form casts cat form once more, which the
+-- game reads as unshifting — the same result, without the special case.
+local TRAVEL_FORMS = { travel = true, aquatic = true, flight = true, swiftFlight = true }
+
 function FM.Forms.InForm()
 	if not IsDruid() or not next(known) then
 		return false
 	end
 	local wanted = {}
-	for _, name in pairs(known) do
-		wanted[name] = true
+	for key, name in pairs(known) do
+		if TRAVEL_FORMS[key] then
+			wanted[name] = true
+		end
 	end
 	for i = 1, 40 do
 		local name = UnitBuff("player", i)

@@ -67,10 +67,16 @@ function FM.Zones.Continent()
 	return nil
 end
 
+-- under a roof? No mount comes out there, and travel form needs open sky —
+-- which leaves cat form as the only way a druid moves faster than a walk.
+function FM.Zones.Indoors()
+	return (IsIndoors and IsIndoors()) or false
+end
+
 -- may I use a flying mount right now? Indoors and instances are excluded
 -- outright: flight fails there regardless of the zone.
 function FM.Zones.CanFly()
-	if IsIndoors and IsIndoors() then
+	if FM.Zones.Indoors() then
 		return false, "indoors"
 	end
 	if IsInInstance and IsInInstance() then

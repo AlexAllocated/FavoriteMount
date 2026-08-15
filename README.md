@@ -16,11 +16,12 @@ druid into the right travel form instead when that works better.
   item by hand.
 - **Random every time.** Several flying (or ground) mounts in the bags means a
   different one on each click.
-- **Druid forms, weighed by speed.** Aquatic form while swimming (nothing else
-  moves in water), and otherwise whichever is faster — a tie goes to the form,
-  because shifting is instant and free. Swift flight form beats an epic drake;
-  travel form's 40% loses to any ground mount, but still carries you when the
-  bags hold nothing that fits. `/fm forms` shifts always, speed or not.
+- **Druid forms, weighed by speed.** Aquatic form while swimming and cat form
+  under a roof — where no mount comes out at all — and otherwise whichever is
+  faster, with a tie going to the form, because shifting is instant and free.
+  Swift flight form beats an epic drake; travel form's 40% loses to any ground
+  mount, but still carries you when the bags hold nothing that fits. `/fm forms`
+  shifts always, speed or not.
 - **Dismounts.** Clicking again while mounted or shifted puts you back on your
   feet.
 - **Just a macro.** The addon keeps a `FavoriteMount` macro in your macro
