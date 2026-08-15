@@ -9,8 +9,12 @@ druid into the right travel form instead when that works better.
 ## Features
 
 - **Knows where you may fly.** This client has no dependable flight check, so
-  the addon carries an explicit zone list. Unlisted zones count as ground-only,
-  and an unknown zone still flies if you are on a flight-enabled continent.
+  the addon carries an explicit zone list — of map ids, which are the same
+  number in every language. Unlisted zones count as ground-only, and an unknown
+  zone still flies if you are on a flight-enabled continent.
+- **Class mounts too.** A warlock's felsteed, a paladin's charger and a shaman's
+  ghost wolf are spells rather than bag items; they are weighed against what is
+  in your bags like everything else.
 - **Finds your mounts by itself.** Your bags are scanned for mount items; the
   riding skill an item demands decides whether it flies. You can correct any
   item by hand.
@@ -40,7 +44,10 @@ druid into the right travel form instead when that works better.
 
 ## Compatibility
 
-For WoW Classic TBC Anniversary (interface 2.5.6). No dependencies.
+For WoW Classic TBC Anniversary (interface 2.5.6). No dependencies. Works in
+any client language: zones are matched by map id and spells by spell id, never
+by name. English, German and French are translated; other languages fall back
+to English text and work exactly the same.
 
 ## License
 

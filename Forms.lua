@@ -1,12 +1,13 @@
 -- FavoriteMount — druid travel forms
--- Forms beat mounts where mounts cannot go: water, and shifting is instant. A
--- druid gets aquatic form while swimming, flight form where flying is allowed,
--- and travel form as the ground option — each only if actually learned. Names
--- come from the client via the spell id, so no localized string is hardcoded.
+-- Forms beat mounts where mounts cannot go: water and roofs, and shifting is
+-- instant. A druid gets aquatic form while swimming, cat form indoors, flight
+-- form where flying is allowed and travel form as the ground option — each
+-- only if actually learned. Names come from the client via the spell id, so no
+-- localized string is hardcoded anywhere.
 
 local FM = FavoriteMount
 
--- base spell ids; ranks resolve through the spellbook scan below
+-- base spell ids; ranks resolve through the spellbook lookup in Spells.lua
 local FORM_SPELLS = {
 	travel = 783,
 	aquatic = 1066,
@@ -29,68 +30,50 @@ local FORM_SPEED = {
 
 FM.Forms = {}
 
-local known = {} -- [key] = localized spell name
-
 local function IsDruid()
 	return select(2, UnitClass("player")) == "DRUID"
 end
 
--- every spell name in the player's spellbook, so "do I know this form?" never
--- depends on a hardcoded translation
-local function ScanSpellbook()
-	local names = {}
-	for tab = 1, GetNumSpellTabs() do
-		local _, _, offset, numSpells = GetSpellTabInfo(tab)
-		for i = offset + 1, offset + numSpells do
-			local name = GetSpellBookItemName(i, BOOKTYPE_SPELL)
-			if name then
-				names[name] = true
-			end
-		end
-	end
-	return names
-end
-
-function FM.Forms.Refresh()
-	wipe(known)
+-- the localized name of a form this druid knows, nil otherwise
+local function KnownForm(key)
 	if not IsDruid() then
-		return
+		return nil
 	end
-	local book = ScanSpellbook()
-	for key, spellID in pairs(FORM_SPELLS) do
-		local name = GetSpellInfo(spellID)
-		if name and book[name] then
-			known[key] = name
-		end
-	end
+	return (FM.Spells.Name(FORM_SPELLS[key])) -- parenthesised: one value, safe in and/or
 end
 
 -- the form to use for a situation ("swim" | "indoors" | "fly" | "ground"),
 -- plus its speed so the caller can weigh it against a mount. nil when the
 -- druid does not know a form that fits.
 function FM.Forms.For(situation)
-	if not IsDruid() then
-		return nil, 0
-	end
 	local key
 	if situation == "swim" then
-		key = known.aquatic and "aquatic"
+		key = "aquatic"
 	elseif situation == "indoors" then
 		-- under a roof nothing else moves: mounts are refused and travel form
 		-- needs open sky, while cat form shifts anywhere and can dash
-		key = known.cat and "cat"
+		key = "cat"
 	elseif situation == "fly" then
-		key = (known.swiftFlight and "swiftFlight") or (known.flight and "flight")
+		key = KnownForm("swiftFlight") and "swiftFlight" or "flight"
 	else
-		key = known.travel and "travel"
+		key = "travel"
 	end
-	if not key then
+	local name = KnownForm(key)
+	if not name then
 		return nil, 0
 	end
-	return known[key], FORM_SPEED[key]
+	return name, FORM_SPEED[key]
 end
 
+-- [key] = localized name, for /fm
 function FM.Forms.Known()
+	local known = {}
+	for key in pairs(FORM_SPELLS) do
+		local name = KnownForm(key)
+		if name then
+			known[key] = name
+		end
+	end
 	return known
 end
 
@@ -102,17 +85,21 @@ end
 -- get around, so it must not turn the button into a plain '/cancelform'.
 -- Pressing it again while in cat form casts cat form once more, which the
 -- game reads as unshifting — the same result, without the special case.
-local TRAVEL_FORMS = { travel = true, aquatic = true, flight = true, swiftFlight = true }
+local TRAVEL_FORMS = { "travel", "aquatic", "flight", "swiftFlight" }
 
 function FM.Forms.InForm()
-	if not IsDruid() or not next(known) then
+	if not IsDruid() then
 		return false
 	end
 	local wanted = {}
-	for key, name in pairs(known) do
-		if TRAVEL_FORMS[key] then
+	for _, key in ipairs(TRAVEL_FORMS) do
+		local name = KnownForm(key)
+		if name then
 			wanted[name] = true
 		end
+	end
+	if not next(wanted) then
+		return false
 	end
 	for i = 1, 40 do
 		local name = UnitBuff("player", i)
@@ -125,7 +112,3 @@ function FM.Forms.InForm()
 	end
 	return false
 end
-
-FM.RegisterEvent("PLAYER_LOGIN", FM.Forms.Refresh)
-FM.RegisterEvent("SPELLS_CHANGED", FM.Forms.Refresh)
-FM.RegisterEvent("LEARNED_SPELL_IN_TAB", FM.Forms.Refresh)

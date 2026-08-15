@@ -23,8 +23,11 @@ end
 
 commands["status"] = function()
 	local zone, continent, canFly = FM.Zones.Describe()
+	-- the map id is printed on purpose: flight is decided by that number, so a
+	-- zone judged wrongly can be reported without guessing at translations
 	FM.Print(L["zone"] .. ": " .. tostring(zone)
-		.. " (" .. L["continent"] .. ": " .. tostring(continent or "?") .. ") — "
+		.. " (" .. L["continent"] .. ": " .. tostring(continent or "?")
+		.. ", " .. L["map"] .. " " .. tostring(FM.Zones.MapID() or "?") .. ") — "
 		.. (canFly and ("|cff40ff40" .. L["flying allowed here"] .. "|r")
 			or ("|cffffd100" .. L["ground only here"] .. "|r")))
 	FM.PrintLine(L["next click"] .. ": " .. tostring(FM.Macro.Describe()))
@@ -44,6 +47,10 @@ commands["status"] = function()
 			FM.PrintLine("   " .. ItemName(itemID))
 		end
 	end
+	local steed = FM.Steeds.Known()
+	if steed then
+		FM.PrintLine(L["own mount"] .. ": " .. steed)
+	end
 	local forms = {}
 	for key, name in pairs(FM.Forms.Known()) do
 		forms[#forms + 1] = key .. " (" .. name .. ")"
@@ -51,8 +58,10 @@ commands["status"] = function()
 	if #forms > 0 then
 		table.sort(forms)
 		FM.PrintLine(L["druid forms"] .. ": " .. table.concat(forms, ", "))
+	end
+	if steed or #forms > 0 then
 		local mode = FM.db.alwaysForms and L["always"] or L["whichever is faster"]
-		FM.PrintLine(string.format(L["form or mount: %s"], mode))
+		FM.PrintLine(string.format(L["own spell or mount: %s"], mode))
 	end
 end
 
@@ -99,7 +108,7 @@ commands["forms"] = function()
 	FM.db.alwaysForms = not FM.db.alwaysForms
 	FM.Macro.Update()
 	local mode = FM.db.alwaysForms and L["always"] or L["whichever is faster"]
-	FM.Print(string.format(L["form or mount: %s"], mode))
+	FM.Print(string.format(L["own spell or mount: %s"], mode))
 end
 
 commands["macro"] = function()
@@ -108,10 +117,10 @@ end
 
 commands["help"] = function()
 	FM.Print("/fm — " .. L["next click"])
-	FM.PrintLine("/fm macro — create or repair the macro")
-	FM.PrintLine("/fm fly | /fm ground — classify the hovered mount by hand")
-	FM.PrintLine("/fm exclude — never (or again) use the hovered mount")
-	FM.PrintLine("/fm forms — druids: always shift, or take whatever is faster")
+	FM.PrintLine("/fm macro — " .. L["create or repair the macro"])
+	FM.PrintLine("/fm fly | /fm ground — " .. L["classify the hovered mount by hand"])
+	FM.PrintLine("/fm exclude — " .. L["never (or again) use the hovered mount"])
+	FM.PrintLine("/fm forms — " .. L["always use your class spell, or take whatever is faster"])
 end
 
 SLASH_FAVORITEMOUNT1 = "/favoritemount"
@@ -124,7 +133,7 @@ SlashCmdList["FAVORITEMOUNT"] = function(input)
 	end
 	local handler = commands[cmd]
 	if not handler then
-		FM.Print("unknown command '" .. cmd .. "' — /fm help")
+		FM.Print(string.format(L["unknown command '%s' — /fm help"], cmd))
 		return
 	end
 	local ok, err = pcall(handler)

@@ -18,15 +18,27 @@ FM.Macro = {}
 local lastBody -- avoid rewriting an unchanged macro on every event
 local pending = false
 
+-- the class's own answer for this situation: a druid form, or the warlock's,
+-- paladin's or shaman's own spell. No class has both, so whichever exists wins
+-- — and on the impossible tie, the faster one.
+local function ClassSpell(situation)
+	local form, formSpeed = FM.Forms.For(situation)
+	local steed, steedSpeed = FM.Steeds.For(situation)
+	if steed and (not form or steedSpeed > formSpeed) then
+		return steed, steedSpeed
+	end
+	return form, formSpeed
+end
+
 -- what should the macro do right now? Returns the body and a short
 -- description for /fm.
 local function Build()
 	-- already mounted or shifted: the click takes you back to your feet
 	if IsMounted and IsMounted() then
-		return "#showtooltip\n/dismount", "dismount"
+		return "#showtooltip\n/dismount", FM.L["dismount"]
 	end
 	if FM.Forms.InForm() then
-		return "#showtooltip\n/cancelform", "cancel form"
+		return "#showtooltip\n/cancelform", FM.L["cancel form"]
 	end
 
 	local situation = "ground"
@@ -37,36 +49,38 @@ local function Build()
 	elseif FM.Zones.CanFly() then
 		situation = "fly"
 	end
-	local form, formSpeed = FM.Forms.For(situation)
+	local spell, spellSpeed = ClassSpell(situation)
 
-	-- water and roofs both rule out every mount there is, so only a druid has
-	-- an answer: aquatic form to swim, cat form to at least beat a walk
+	-- water and roofs both rule out every mount there is, so only a class of
+	-- its own has an answer: aquatic form to swim, cat form or ghost wolf to at
+	-- least beat a walk under a roof
 	if situation == "swim" or situation == "indoors" then
-		if form then
-			return "#showtooltip\n/cast " .. form, form
+		if spell then
+			return "#showtooltip\n/cast " .. spell, spell
 		end
 		if situation == "swim" then
-			return nil, "swimming"
+			return nil, FM.L["swimming"]
 		end
-		-- no cat form to shift into: try the ground answer anyway, since not
-		-- every roof the client reports actually refuses a mount
+		-- nothing to shift into: try the ground answer anyway, since not every
+		-- roof the client reports actually refuses a mount
 		situation = "ground"
-		form, formSpeed = FM.Forms.For(situation)
+		spell, spellSpeed = ClassSpell(situation)
 	end
 
 	local kind = (situation == "fly") and "fly" or "ground"
 	local itemID = FM.Mounts.Random(kind)
-	-- form or mount? Whichever actually moves faster, and a tie goes to the
-	-- form because shifting is instant and costs nothing. So swift flight form
-	-- beats an epic drake, while travel form's 40% loses to any ground mount —
-	-- and with no fitting mount in the bags the form goes regardless.
-	-- '/fm forms' overrides all of that in favour of shifting.
+	-- own spell or bag mount? Whichever actually moves faster, and a tie goes
+	-- to the spell: it is instant or free, and costs no bag slot. So swift
+	-- flight form beats an epic drake and a charger beats an equally fast bag
+	-- mount, while travel form's 40% loses to any ground mount — and with no
+	-- fitting mount in the bags the spell goes regardless. '/fm forms'
+	-- overrides all of that in favour of the class spell.
 	local mountSpeed = 0
 	if itemID then
 		mountSpeed = FM.Mounts.Speed(itemID)
 	end
-	if form and (not itemID or FM.db.alwaysForms or formSpeed >= mountSpeed) then
-		return "#showtooltip\n/cast " .. form, form
+	if spell and (not itemID or FM.db.alwaysForms or spellSpeed >= mountSpeed) then
+		return "#showtooltip\n/cast " .. spell, spell
 	end
 	if itemID then
 		local name = GetItemInfo(itemID) or ("item:" .. itemID)
@@ -77,9 +91,10 @@ local function Build()
 	local other = FM.Mounts.Random(kind == "fly" and "ground" or "fly")
 	if other then
 		local name = GetItemInfo(other) or ("item:" .. other)
-		return "#showtooltip\n/use item:" .. other, name .. " (no " .. kind .. " mount in the bags)"
+		return "#showtooltip\n/use item:" .. other,
+			string.format(FM.L["%s (nothing better in the bags)"], name)
 	end
-	return nil, "no mount in the bags"
+	return nil, FM.L["no mount in the bags"]
 end
 
 function FM.Macro.Describe()

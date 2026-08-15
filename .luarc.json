@@ -19,7 +19,14 @@
 		"EditMacro",
 		"IsIndoors",
 		"IsSwimming",
-		"IsMounted"
+		"IsMounted",
+		"IsInInstance",
+		"UnitClass",
+		"GetLocale",
+		"GetRealZoneText",
+		"GetZoneText",
+		"C_Map",
+		"Enum"
 	],
 	"diagnostics.disable": [
 		"lowercase-global",

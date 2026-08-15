@@ -3,6 +3,18 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) /
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-08-15
+
+### Added
+- Warlock and paladin steeds and the shaman's ghost wolf: class mounts are
+  spells, not bag items, and were invisible to the addon until now.
+- French localization.
+
+### Changed
+- Flight zones are matched by map id instead of by zone name, so any client
+  language works; the name list stays as a fallback.
+- `/fm` prints the map id, and every message it prints is translatable.
+
 ## [1.0.0] - 2026-08-15
 
 ### Added
