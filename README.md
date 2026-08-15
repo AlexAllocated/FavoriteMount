@@ -1,5 +1,7 @@
 # Favorite Mount
 
+<img src="media/logo.png" alt="Favorite Mount" width="128">
+
 One button for mounting in WoW Classic (TBC Anniversary, 2.5.6): it picks a
 random mount from your bags that fits where you are standing, and shifts a
 druid into the right travel form instead when that works better.

@@ -8,6 +8,7 @@ ignore:
   - .luarc.json
   - .pkgmeta
   - CLAUDE.md
+  - media
 
 manual-changelog:
   filename: CHANGELOG.md
