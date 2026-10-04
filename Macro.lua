@@ -69,6 +69,11 @@ local function Build()
 
 	local kind = (situation == "fly") and "fly" or "ground"
 	local itemID = FM.Mounts.Random(kind)
+	if kind == "fly" and not spell and not itemID then
+		kind = "ground"
+		spell, spellSpeed = ClassSpell("ground")
+		itemID = FM.Mounts.Random(kind)
+	end
 	-- own spell or bag mount? Whichever actually moves faster, and a tie goes
 	-- to the spell: it is instant or free, and costs no bag slot. So swift
 	-- flight form beats an epic drake and a charger beats an equally fast bag
@@ -140,10 +145,7 @@ function FM.Macro.Update(verbose)
 	if not exists and not verbose and FM.db.macroCreated then
 		return -- the player deleted it on purpose
 	end
-	local body = Build()
-	if not body then
-		return -- nothing sensible to put in; leave the last body alone
-	end
+	local body = Build() or "#showtooltip"
 	if body == lastBody and exists and not verbose then
 		return
 	end
