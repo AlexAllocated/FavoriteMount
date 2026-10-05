@@ -12,12 +12,12 @@ local FM = FavoriteMount
 
 -- flight zones that are not simply "the whole continent"
 local FLYABLE_MAPS = {
-	[122] = true, -- Isle of Quel'Danas (2.4), the one flight zone outside Outland
+	[1957] = true, -- Isle of Quel'Danas (2.4), the one flight zone outside Outland
 }
 
 -- standing anywhere on such a continent means flying is allowed
 local FLYABLE_CONTINENTS = {
-	[101] = true, -- Outland
+	[1945] = true, -- Outland (TBC Classic UI map ID)
 }
 
 -- Fallback only, for a client that gives us no map id. Add a locale by adding

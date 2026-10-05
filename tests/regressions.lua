@@ -34,4 +34,28 @@ assert(body:find("item:123", 1, true), "do not edit macros during combat")
 combat = false
 events.PLAYER_REGEN_ENABLED()
 assert(body == "#showtooltip", "an excluded/unavailable mount must leave no stale action")
+-- TBC map IDs must work without the English/German/French name fallback.
+local mapID, indoors, instance = 1944, false, false
+Enum = { UIMapType = { Continent = 2 } }
+GetRealZoneText = function() return "Полуостров Адского Пламени" end
+GetZoneText = GetRealZoneText
+IsIndoors = function() return indoors end
+IsInInstance = function() return instance end
+C_Map = {
+    GetBestMapForUnit = function() return mapID end,
+    GetMapInfo = function(id)
+        if id == 1944 then return { parentMapID = 1945, mapType = 3 } end
+        if id == 1945 then return { name = "Запределье", parentMapID = 946, mapType = 2 } end
+        if id == 1941 then return { parentMapID = 1415, mapType = 3 } end
+        if id == 1415 then return { name = "Восточные королевства", mapType = 2 } end
+    end,
+}
+dofile("Zones.lua")
+assert(FavoriteMount.Zones.CanFly(), "Outland must be flyable on other client languages")
+indoors = true
+assert(not FavoriteMount.Zones.CanFly(), "map IDs must not allow flight indoors")
+indoors, instance = false, true
+assert(not FavoriteMount.Zones.CanFly(), "map IDs must not allow flight in an instance")
+instance, mapID = false, 1941
+assert(not FavoriteMount.Zones.CanFly(), "other Classic continents remain ground-only")
 print("FavoriteMount regressions passed")
